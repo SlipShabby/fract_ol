@@ -6,7 +6,7 @@
 #    By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/08/29 19:43:34 by ajulanov          #+#    #+#              #
-#    Updated: 2019/08/30 20:04:57 by ajulanov         ###   ########.fr        #
+#    Updated: 2019/08/31 03:31:43 by ajulanov         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ LIBFT_DIR = ./libft/
 MLX = ./minilibx_macos/libmlx.a
 
 SRC_FILES = main.c
-OBJ_FILES = $(SRC_FILES:.c=.o)
+OBJ_FILES = $(patsubst %.c, %.o, $(SRC_FILES))
 
 SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
 OBJ = $(addprefix $(OBJ_DIR), $(OBJ_FILES))
