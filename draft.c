@@ -6,7 +6,7 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/30 18:51:03 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/08/31 03:40:46 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/08/31 04:09:40 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # define TRD_WIDTH      5
 # define TRD_NUM        100
 
-# define ERR_USAGE		"usage: ./fractol [Letter:\"M - mandelbrot\", \"J - julia\", \"3 - Custom\"]"
+# define ERR_USAGE		"usage: ./fractol [Letter:\"M - mandelbrot\", \"J - julia\", \"3 - Suprise me\"]"
 # define ERR_CREATE		"error: could not initialize memory for fractol"
 # define ERR_READ	    "error: could not read the fractol"
 
@@ -74,6 +74,15 @@ typedef struct	s_fractol
 	int					red;
 	int					blue;
 	int					green;
+	int					max_iter;
+	double				min_real;
+	double				min_imaginary;
+	double				max_real;
+	double				max_imaginary;
+	double				real_factor;
+	double				imaginary_factor;
+	int					color;
+	double				zoom;
 }				t_fractol;
 // __________________________________________________
 
@@ -97,11 +106,20 @@ void set_hooks(t_fractol *set)
 int	set_choice(char **av, t_fractol *set)
 {
 	if (ft_strcmp(av[1], "M") == 0)
-		set->choice = 1;
+		{
+			set->choice = 1;
+			mandelbrot_fractal(set);
+		}
 	else if (ft_strcmp(av[1], "J") == 0)
-		set->choice = 2;
-	else if (ft_strcmp(av[1], "C") == 0)
-		set->choice = 3;
+		{
+			set->choice = 2;
+			julia_fractal(set);
+		}
+	else if (ft_strcmp(av[1], "S") == 0)
+		{
+			set->choice = 3;
+			surprise_me(set);
+		}
 	else
 		kill_bill(ERR_USAGE);
 	return (1);
@@ -117,6 +135,19 @@ void init_env(t_fractol *set)
 	set->endian = 0;
 	set->width = 1000;
 	set->height = 1000;
+	set->min_real = -2.0;
+	set->min_imaginary = -2.0;
+	set->max_real = 2.0;
+	set->max_imaginary = 2.0;
+	set->max_iter = 50;
+	set->zoom = 1;
+	set->color = 0xE0E907;
+	set->real_factor = (set->max_real - set->min_real) / set->width;
+	set->imaginary_factor= (set->max_imaginary - set->min_imaginary) / set->width;
+	set->min_real += (((set->width / 2) - (set->width / 2)) * set->real_factor);
+	set->min_imaginary -= (((set->width / 2) - (set->width / 2)) * set->imaginary_factor);
+	set->max_real += (((set->width / 2) - (set->width / 2)) * set->real_factor);
+	set->max_imaginary -= (((set->width / 2) - (set->width / 2)) * set->imaginary_factor);
 }
 
 void	win_init(t_fractol *set)
@@ -151,6 +182,7 @@ int		main(int ac, char **av)
 		ft_putstr("fractol was created\n");
 		set_hooks(set);
 		mlx_loop(set->mlx);
+		free(set);
 	}
 	else
 		kill_bill(ERR_USAGE);
