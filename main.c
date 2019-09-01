@@ -6,7 +6,7 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/29 19:42:12 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/08/31 03:18:13 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/08/31 12:39:43 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	set_choice(char **av, t_fractol *set)
 		set->choice = 1;
 	else if (ft_strcmp(av[1], "J") == 0)
 		set->choice = 2;
-	else if (ft_strcmp(av[1], "C") == 0)
+	else if (ft_strcmp(av[1], "S") == 0)
 		set->choice = 3;
 	else
 		kill_bill(ERR_USAGE);
