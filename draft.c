@@ -6,7 +6,7 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/30 18:51:03 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/01 17:07:42 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/01 17:39:32 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,7 @@
 # include <pthread.h>
 # include <errno.h>
 
-# define WIDTH			1600
-# define WIDTH_W		1400
-# define HEIGHT      	1200
-# define HEIGHT_W      	1000
+# define WIDTH			1000
 # define TRD_WIDTH      5
 # define TRD_NUM        100
 # define THREADS 		8
@@ -101,8 +98,8 @@ typedef struct	s_fractol
 	double				z_im;
 	double				z_r_2;
 	double				z_im_2;
-	double		x0;
-	double		y0;
+	double				x0;
+	double				y0;
 	int					color;
 	int					color_shift;
 	int					color_change;
@@ -124,8 +121,8 @@ int		mouse_julia(int key, int x, int y, t_fractol *set)
 {
 	if (key == 4 || key == 5)
 	{
-		set->x0 += (x - set->x_trans) / ((WIDTH_W / 4) * set->zoom);
-		set->y0 += (y - set->y_trans) / ((HEIGHT_W / 4) * set->zoom);
+		set->x0 += (x - set->x_trans) / ((WIDTH / 4) * set->zoom);
+		set->y0 += (y - set->y_trans) / ((WIDTH / 4) * set->zoom);
 		set->zoom *= ((key == 4) ? Z_MULT : 1 / Z_MULT);
 		set->x_trans = x;
 		set->y_trans = y;
@@ -139,8 +136,8 @@ int		mandelbrot(t_fractol *set, int x, int y)
 	int		i;
 	double	tab[6];
 
-	tab[2] = ((double)x - set->x_trans) / ((WIDTH_W / 4) * set->zoom) + set->x0;
-	tab[3] = ((double)y - set->y_trans) / ((HEIGHT_W / 4) * set->zoom) + set->y0;
+	tab[2] = ((double)x - set->x_trans) / ((WIDTH / 4) * set->zoom) + set->x0;
+	tab[3] = ((double)y - set->y_trans) / ((WIDTH / 4) * set->zoom) + set->y0;
 	tab[0] = tab[2];
 	tab[1] = tab[3];
 	i = 0;
@@ -164,11 +161,11 @@ void draw(t_fractol *set, int y, int y_fin)
 	while (y < y_fin)
 		{
 			x = 0;
-			while (x < WIDTH_W)
+			while (x < WIDTH)
 			{
 				i = set->name(set, x, y);
 				color = (i * set->r) + (i * set-> g) + (i * set->b);
-				set->img_ptr[x + (y * WIDTH_W)] = ((i < set->bound) ? color : 0);
+				set->img_ptr[x + (y * WIDTH)] = ((i < set->bound) ? color : 0);
 				x++;
 			}
 			y++;
@@ -185,7 +182,7 @@ void *find_thread(void *set)
 	while (++i < THREADS)
 	{
 		if (pthread_equal(pthread_self(), f->threads[i]))
-			draw(f, i * (HEIGHT_W/ THREADS), i * (WIDTH_W/THREADS) + (HEIGHT_W/THREADS));
+			draw(f, i * (WIDTH/ THREADS), i * (WIDTH/THREADS) + (WIDTH/THREADS));
 	}
 	return (0);
 }
@@ -215,18 +212,18 @@ void multithread(t_fractol *set)
 
 void mandelbrot_env(t_fractol *set)
 {
-	set->width = 1400;
-	set->height = 1000;
+	// WIDTH = 1400;
+	// WIDTH = 1000;
 	// set->min_real = -2.05;
 	// set->min_imaginary = -1.4;
 	// set->max_real = 1.2;
 	// set->max_imaginary = 1.2;
 	// set->zoom = 100;
 	// set->max_n = 100;
-	set->z_r_2 = set->z_r * set->z_r;
-	set->z_im_2 = set->z_im * set->z_im;
-	set->delta_r = set->max_real - set->min_real;
-	set->delta_im = set->max_imaginary - set->min_imaginary;
+	// set->z_r_2 = set->z_r * set->z_r;
+	// set->z_im_2 = set->z_im * set->z_im;
+	// set->delta_r = set->max_real - set->min_real;
+	// set->delta_im = set->max_imaginary - set->min_imaginary;
 	set->x = 200;
 	set->y = 200;
 	set->name = &mandelbrot;
@@ -260,20 +257,20 @@ int	set_choice(char **av, t_fractol *set)
 	if (ft_strcmp(av[1], "M") == 0)
 		{
 			set->choice = 1;
-			set->win = mlx_new_window(set->mlx, WIDTH, HEIGHT, "Jaan's Fractol: Mandelbrot set");
+			set->win = mlx_new_window(set->mlx, WIDTH, WIDTH, "Jaan's Fractol: Mandelbrot set");
 			mandelbrot_fractal(set);
 			mlx_mouse_hook(set->win, mouse_julia, set);
 		}
 	else if (ft_strcmp(av[1], "J") == 0)
 		{
 			set->choice = 2;
-			set->win = mlx_new_window(set->mlx, WIDTH, HEIGHT, "Jaan's Fractol: Julia set");
+			set->win = mlx_new_window(set->mlx, WIDTH, WIDTH, "Jaan's Fractol: Julia set");
 			// julia_fractal(set);
 		}
 	else if (ft_strcmp(av[1], "S") == 0)
 		{
 			set->choice = 3;
-			set->win = mlx_new_window(set->mlx, WIDTH, HEIGHT, "Jaan's Fractol: Random set");
+			set->win = mlx_new_window(set->mlx, WIDTH, WIDTH, "Jaan's Fractol: Random set");
 			// surprise_me(set);
 		}
 	else
@@ -290,8 +287,6 @@ void init_env(t_fractol *set)
 	set->sl = 0;
 	set->endian = 0;
 	set->bound = 100;
-	set->width = 1000;
-	set->height = 1000;
 	set->min_real = -2.0;
 	set->min_imaginary = -2.0;
 	set->max_real = 2.0;
@@ -304,7 +299,7 @@ void init_env(t_fractol *set)
 	set->g = 0x00FF00;
 	set->b = 0x0000FF;
 	set->x_trans = WIDTH / 2;
-	set->y_trans = HEIGHT / 2;
+	set->y_trans = WIDTH / 2;
 	set->drawn = 0;
 	set->lock = 0;
 }
@@ -312,7 +307,7 @@ void init_env(t_fractol *set)
 void	init_win(t_fractol *set)
 {
 	set->mlx = mlx_init();
-	set->img = mlx_new_image(set->mlx, WIDTH, HEIGHT);
+	set->img = mlx_new_image(set->mlx, WIDTH, WIDTH);
 	set->img_ptr = (int*)mlx_get_data_addr(set->img, &set->bpp, &set->sl, &set->endian);
 }
 
@@ -321,7 +316,7 @@ void	reset(t_fractol *set)
 	set->bound = 100;
 	set->zoom = 1;
 	set->x_trans = WIDTH / 2;
-	set->y_trans = HEIGHT / 2;
+	set->y_trans = WIDTH / 2;
 	multithread(set);
 }
 
