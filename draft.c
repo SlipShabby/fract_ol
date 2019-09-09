@@ -6,7 +6,7 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/30 18:51:03 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/02 01:15:57 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/09 05:44:28 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,12 +19,13 @@
 # include <math.h>
 # include <pthread.h>
 # include <errno.h>
+# include <inttypes.h>
 
 # define WIDTH			1200
 # define HEIGHT			1200
 # define THREADS 		10
-# define Z_MULT			1.05
-# define SHIFT	5
+# define Z_MULT			1.1
+# define SHIFT			10
 
 # define ERR_USAGE		"usage: ./fractol [Letter:\"M - mandelbrot\", \"J - julia\", \"S - Suprise me\"]"
 # define ERR_CREATE		"error: could not initialize fractol"
@@ -94,23 +95,47 @@ typedef struct	s_fractol
 	double				zoom;
 	pthread_t			threads[THREADS];
 	int					(*name)(struct s_fractol *set, int x, int y);
-//  ???
 
-	double				c_r;
-	double				c_im;
-	double				tmp1;
-	double				tmp2;
-
-	double				z_r;
-	double				z_im;
-	double				z_r_2;
-	double				z_im_2;
+// julia
+	double				aj;
+	double				bj;
 }				t_fractol;
 // __________________________________________________
 
 void	kill_bill(char *s);
 void	multithread(t_fractol *set);
 
+
+int julia(t_fractol *set, int x, int y)
+{
+	int		i;
+	double	a;
+	double	b;
+	double	aa;
+	double	bb;
+
+	i = -1;
+	a = ((double)x - set->x_trans) / ((WIDTH / 4) * set->zoom) + set->x0;
+	b = ((double)y - set->y_trans) / ((WIDTH / 4) * set->zoom) + set->y0;
+	while (++i < set->max_n && a + b <= 16)
+	{
+		aa = (a * a) - (b * b);
+		bb = 2 * a * b;
+		a = aa + set->aj;
+		b = bb + set->bj;
+	}
+	return (i);
+}
+
+int		mouse_motion(int x, int y, t_fractol *set)
+{
+	if ((x == set->aj && y == set->bj) || !set->lock)
+		return (0);
+	set->aj = ((((double)x - WIDTH) / (WIDTH / 2)) + 1);
+	set->bj = ((((double)y - WIDTH) / (WIDTH / 2)) + 1);
+	multithread(set);
+	return (0);
+}
 
 int		mouse_M_J(int key, int x, int y, t_fractol *set)
 {
@@ -204,11 +229,18 @@ void multithread(t_fractol *set)
 	set->drawn = 1;
 }
 
+void julia_fractal(t_fractol *set)
+{
+	set->name = &julia;
+	set->aj = 0.388333;
+	set->bj = -0.3001667;
+	set->lock = 1;
+	multithread(set);
+}
+
 void mandelbrot_fractal(t_fractol *set)
 {
 	set->name = &mandelbrot;
-	set->x0 = 0;
-	set->y0 = 0;
 	set->color = 0xd7afd7;
 	multithread(set);
 }
@@ -244,9 +276,9 @@ void	key_color(int key, t_fractol *set)
 		set->b = 0;
 	if (key == NUM_0)
 	{
-		set->r = 0x030000;
-		set->g = 0x000300;
-		set->b = 0x000003;
+		set->r = 0xd70000;
+		set->g = 0x00af00;
+		set->b = 0x0000d7;
 	}
 	multithread(set);
 }
@@ -268,6 +300,8 @@ int key_press_hook(int key, t_fractol *set)
 	}
 	if (key >= NUM_0 && key <= NUM_9)
 			key_color(key, set);
+	if (key == 49)
+		set->lock = (set->lock == 0) ? 1 : 0;
 	return (0);
 }
 
@@ -276,7 +310,7 @@ void set_hooks(t_fractol *set)
 {
 	mlx_hook(set->win, 2, 0, key_press_hook, set);
 	// mlx_hook(set->win, 4, 0, mouse_press_hook, set);
-	// mlx_hook(set->win, 6, 0, mouse_motion_hook, set);
+	mlx_hook(set->win, 6, 0, mouse_motion, set);
 }
 
 int	set_choice(char **av, t_fractol *set)
@@ -290,7 +324,9 @@ int	set_choice(char **av, t_fractol *set)
 	else if (ft_strcmp(av[1], "J") == 0)
 		{
 			set->win = mlx_new_window(set->mlx, WIDTH, WIDTH, "Jaan's Fractol: Julia set");
-			// julia_fractal(set);
+			julia_fractal(set);
+			mlx_mouse_hook(set->win, mouse_M_J, set);
+			mlx_hook(set->win, 6, 0, mouse_motion, set);
 		}
 	else if (ft_strcmp(av[1], "S") == 0)
 		{
@@ -318,7 +354,8 @@ void init_env(t_fractol *set)
 	set->x_trans = WIDTH / 2;
 	set->y_trans = WIDTH / 2;
 	set->drawn = 0;
-	set->lock = 0;
+	set->x0 = 0;
+	set->y0 = 0;
 }
 
 void	init_win(t_fractol *set)
