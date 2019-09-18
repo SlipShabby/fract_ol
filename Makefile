@@ -6,7 +6,7 @@
 #    By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/08/29 19:43:34 by ajulanov          #+#    #+#              #
-#    Updated: 2019/08/31 03:31:43 by ajulanov         ###   ########.fr        #
+#    Updated: 2019/09/18 02:14:30 by ajulanov         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -31,7 +31,7 @@ OBJ = $(addprefix $(OBJ_DIR), $(OBJ_FILES))
 LIBFT = $(addprefix $(LIBFT_DIR), libft.a)
 LNK  = -L $(LIBFT_DIR)
 
-GIT = "test & pray it works"
+GIT = "should make the Norm & test fr leaks"
 
 GREEN = \033[0;32m
 RED = \033[0;31m
