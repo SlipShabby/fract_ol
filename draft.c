@@ -6,11 +6,9 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/08/30 18:51:03 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/16 01:45:26 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/16 03:14:00 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-// gcc -g draft.c libft/libft.a -L ./minilibx_macos/ -lmlx -framework OpenGL -framework AppKit -o fractol
 
 # include "./libft/libft.h"
 # include "./minilibx_macos/mlx.h"
@@ -22,16 +20,13 @@
 # include <inttypes.h>
 
 # define WIDTH			1200
-# define HEIGHT			1200
 # define THREADS 		10
 # define Z_MULT			1.1
 # define SHIFT			10
 
-# define ERR_USAGE		"usage: ./fractol [Letter:\"M - mandelbrot\", \"J - julia\", \"S - Burning ship\", \"H - Heart\", \"B - Funny bug\"]"
+# define ERR_USAGE		"usage: ./fractol [Type 1st letter: M, J, S, H]"
 # define ERR_CREATE		"error: could not initialize fractol"
-# define ERR_NAME	    "error: invalid name for fractol [M J S]"
-
-# define BLACK			0x000000
+# define ERR_NAME	    "error: invalid name for fractol [M J S H]"
 
 /*
 ** hooks
@@ -57,19 +52,8 @@
 # define MOVE_DOWN			125
 # define MOVE_LEFT			123
 # define MOVE_RIGHT			124
-# define MAIN_I				34
-# define MAIN_P				35
-# define MAIN_R				15
-# define MAIN_T				17
 # define CLEAR				71
-# define TAB				48
 # define SPACE				49
-
-
-# define D(z1, z2)			cabs((z1) - (z2))
-#define MIN(a,b)			((a<b) ? (a):(b))
-
-// ____________________________________________
 
 typedef struct	s_fractol
 {
@@ -77,91 +61,38 @@ typedef struct	s_fractol
 	void                *win;
 	void                *img;
 	int             	*img_ptr;
-
 	int					bpp;
 	int					sl;
 	int					endian;
 	int					max_n;
-
 	double				x0;
 	double				y0;
-	int					x_centered;
-	int					y_centered;
-	
-	int					color;
+	double				aj;
+	double				bj;
 	int					r;
 	int					g;
 	int					b;
-
+	int					color;
+	int					move_x;
+	int					move_y;
 	int					drawn;
 	int					lock;
 	double				zoom;
 	pthread_t			threads[THREADS];
 	int					(*name)(struct s_fractol *set, int x, int y);
-
-// julia
-	double				aj;
-	double				bj;
+	
 }				t_fractol;
-// __________________________________________________
 
 void	kill_bill(char *s);
 void	multithread(t_fractol *set);
-
-
-// int		s_fractal(t_fractol *set, int x, int y)
-// {
-// 	int		i;
-// 	double a;
-// 	double b;
-// 	double aa;
-// 	double bb;
-
-// 	i = -1;
-// 	a = ((double)x - set->x_centered) / (set->zoom * WIDTH/2) + set->x0;
-// 	b = ((double)y - set->y_centered) / (set->zoom * WIDTH/2) + set->y0;
-// 	set->z_r = 0;
-// 	set->z_i = 0;
-// 	while (++i < set->max_n && (set->z_r * set->z_r + set->z_i * set->z_i) <= 4)
-// 	{
-// 		aa = set->z_r;
-// 		bb = set->z_r * set->z_r - set->z_i * set->z_i;
-// 		set->z_i = 2 * fabs(aa * set->z_i) + b;
-// 		set->z_r = bb + a;
-// 	}
-// 	return (i);
-// }
-
-// int		s_fractal(t_fractol *set, int x, int y)
-// {
-// 	int		i;
-// 	double	tmp;
-// 	double	tmp1;
-	
-// 	i = -1;
-// 	set->c_r = 0.29;
-// 	set->c_i = 0.02;
-// 	set->z_r = ((double)x - 0) / set->zoom + set->x0;
-// 	set->z_i = ((double)y - 0) / set->zoom + set->y0;
-// 	while (++i < set->max_n && (set->z_r*set->z_r + set->z_i*set->z_i) <=16)
-// 	{
-// 		tmp = set->z_r;
-// 		set->z_r = set->z_r * set->z_r - set->z_i * set->z_i + set->c_r;
-// 		tmp1 = set->z_i;
-// 		set->z_i = -2 * tmp * tmp1 + set->c_i;
-// 	}
-// 	return (i);
-// }
-
-//heart
 
 int		heart(t_fractol *set, int x, int y)
 {
 	int		i;
 	double	tab[6];
 
-	tab[2] = ((double)x - set->x_centered) / ((WIDTH / 4) * set->zoom) + set->x0;
-	tab[3] = ((double)y - set->y_centered) / ((WIDTH / 4) * set->zoom) + set->y0;
+	tab[2] = ((double)x - set->move_x) / ((WIDTH / 4) * set->zoom) + set->x0;
+	tab[3] = ((double)y - set->move_y) / ((WIDTH / 4) * set->zoom) + set->y0;
 	tab[0] = tab[2];
 	tab[1] = tab[3];
 	i = 0;
@@ -182,8 +113,8 @@ int		burning_ship(t_fractol *set, int x, int y)
 	int		i;
 	double	tab[6];
 
-	tab[2] = ((double)x - set->x_centered) / ((WIDTH / 4) * set->zoom) + set->x0;
-	tab[3] = ((double)y - set->y_centered) / ((WIDTH / 4) * set->zoom) + set->y0;
+	tab[2] = ((double)x - set->move_x) / ((WIDTH / 4) * set->zoom) + set->x0;
+	tab[3] = ((double)y - set->move_y) / ((WIDTH / 4) * set->zoom) + set->y0;
 	tab[0] = tab[2];
 	tab[1] = tab[3];
 	i = 0;
@@ -197,28 +128,6 @@ int		burning_ship(t_fractol *set, int x, int y)
 	}
 	return (i);
 }
-	
-int		bug(t_fractol *set, int x, int y)
-{
-	int		i;
-	double	a;
-	double	b;
-	double	aa;
-	double	bb;
-
-	i = -1;
-	set->c_r = ((double)x - set->x_centered) / set->zoom + set->x0;
-	set->c_i = ((double)y - set->y_centered) / set->zoom + set->y0;
-	a = 0;
-	b = 0;
-	while (++i < set->max_n && (a + b) <= 4 )
-	{
-		aa = a;
-		a = fabs((aa * aa) - (b * b) + set->c_r); 
-		b = fabs(2 * aa * b + set->c_i);
-	}
-	return (i);
-}
 
 int julia(t_fractol *set, int x, int y)
 {
@@ -229,8 +138,8 @@ int julia(t_fractol *set, int x, int y)
 	double	bb;
 
 	i = -1;
-	a = ((double)x - set->x_centered) / ((WIDTH / 4) * set->zoom) + set->x0;
-	b = ((double)y - set->y_centered) / ((WIDTH / 4) * set->zoom) + set->y0;
+	a = ((double)x - set->move_x) / ((WIDTH / 4) * set->zoom) + set->x0;
+	b = ((double)y - set->move_y) / ((WIDTH / 4) * set->zoom) + set->y0;
 	while (++i < set->max_n && a + b <= 16)
 	{
 		aa = (a * a) - (b * b);
@@ -255,11 +164,11 @@ int		mouse_M_J(int key, int x, int y, t_fractol *set)
 {
 	if (key == 4 || key == 5)
 	{
-		set->x0 += (x - set->x_centered) / ((WIDTH / 4) * set->zoom);
-		set->y0 += (y - set->y_centered) / ((WIDTH / 4) * set->zoom);
+		set->x0 += (x - set->move_x) / ((WIDTH / 4) * set->zoom);
+		set->y0 += (y - set->move_y) / ((WIDTH / 4) * set->zoom);
 		set->zoom *= ((key == 4) ? Z_MULT : 1 / Z_MULT);
-		set->x_centered = x;
-		set->y_centered = y;
+		set->move_x = x;
+		set->move_y = y;
 		multithread(set);
 	}
 	return (0);
@@ -270,8 +179,8 @@ int		mandelbrot(t_fractol *set, int x, int y)
 	int		i;
 	double	tab[6];
 
-	tab[2] = ((double)x - set->x_centered) / ((WIDTH / 4) * set->zoom) + set->x0;
-	tab[3] = ((double)y - set->y_centered) / ((WIDTH / 4) * set->zoom) + set->y0;
+	tab[2] = ((double)x - set->move_x) / ((WIDTH / 4) * set->zoom) + set->x0;
+	tab[3] = ((double)y - set->move_y) / ((WIDTH / 4) * set->zoom) + set->y0;
 	tab[0] = tab[2];
 	tab[1] = tab[3];
 	i = 0;
@@ -346,10 +255,10 @@ void multithread(t_fractol *set)
 void heart_fractal(t_fractol *set)
 {
 	set->name = &heart;
-	set->max_n = 200;
-	set->r = 255;
-	set->g = 192;
-	set->b = 203;
+	set->max_n = 1000;
+	set->r = 0x001000;
+	set->g = 0x000100;
+	set->b = 0x000000;
 	multithread(set);
 }
 
@@ -381,8 +290,8 @@ void	reset(t_fractol *set)
 {
 	set->max_n = 100;
 	set->zoom = 1;
-	set->x_centered = WIDTH / 2;
-	set->y_centered = WIDTH / 2;
+	set->move_x = WIDTH / 2;
+	set->move_y = WIDTH / 2;
 	multithread(set);
 }
 
@@ -429,6 +338,14 @@ int key_press_hook(int key, t_fractol *set)
 			set->max_n += 5;
 		multithread(set);
 		
+	}
+	if (key == MOVE_DOWN || key == MOVE_LEFT || key == MOVE_RIGHT || key ==MOVE_UP)
+	{
+		(key == MOVE_DOWN) ? set->move_y += SHIFT : 0;
+		(key == MOVE_UP) ? set->move_y -= SHIFT : 0;
+		(key == MOVE_RIGHT) ? set->move_x += SHIFT : 0;
+		(key == MOVE_LEFT) ? set->move_x -= SHIFT : 0;
+		multithread(set);
 	}
 	if (key >= NUM_0 && key <= NUM_9)
 			key_color(key, set);
@@ -490,8 +407,8 @@ void init_env(t_fractol *set)
 	set->r = 0xE0ffff;
 	set->g = 0xffE9ff;
 	set->b = 0xffff07;
-	set->x_centered = WIDTH / 2;
-	set->y_centered = WIDTH / 2;
+	set->move_x = WIDTH / 2;
+	set->move_y = WIDTH / 2;
 	set->drawn = 0;
 	set->x0 = 0;
 	set->y0 = 0;
