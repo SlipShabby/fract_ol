@@ -6,32 +6,43 @@
 #    By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/08/29 19:43:34 by ajulanov          #+#    #+#              #
-#    Updated: 2019/09/18 02:14:30 by ajulanov         ###   ########.fr        #
+#    Updated: 2019/09/22 14:56:21 by ajulanov         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = fractol
 
-CC = gcc -o
+CC = gcc
+FLAGS = -Wall -Werror -Wextra -O3
+LIBRARIES = -lmlx -lm -lft -L$(LIBFT_DIRECTORY) -L$(MINILIBX_DIRECTORY) -framework OpenGL -framework AppKit
+INCLUDES = -I$(HEADERS_DIRECTORY) -I$(LIBFT_HEADERS) -I$(MINILIBX_HEADERS)
 
-FLAGS = -Wall -Wextra -Werror -g 
-FLAGSMLX = -framework OpenGL -framework AppKit
+LIBFT = $(LIBFT_DIRECTORY)libft.a
+LIBFT_DIRECTORY = ./libft/
+LIBFT_HEADERS = $(LIBFT_DIRECTORY)/
 
-SRC_DIR = ./src/
-OBJ_DIR = ./obj/
-INC_DIR = ./inc/
-LIBFT_DIR = ./libft/
-MLX = ./minilibx_macos/libmlx.a
+MINILIBX = $(MINILIBX_DIRECTORY)libmlx.a
+MINILIBX_DIRECTORY = ./minilibx_macos/
+MINILIBX_HEADERS = $(MINILIBX_DIRECTORY)
 
-SRC_FILES = main.c
-OBJ_FILES = $(patsubst %.c, %.o, $(SRC_FILES))
+HEADERS_LIST = fract_ol.h
+HEADERS_DIRECTORY = ./inc/
+HEADERS = $(addprefix $(HEADERS_DIRECTORY), $(HEADERS_LIST))
 
-SRC = $(addprefix $(SRC_DIR), $(SRC_FILES))
-OBJ = $(addprefix $(OBJ_DIR), $(OBJ_FILES))
-LIBFT = $(addprefix $(LIBFT_DIR), libft.a)
-LNK  = -L $(LIBFT_DIR)
+SOURCES_DIRECTORY = ./src/
+SOURCES_LIST = main.c\
+	env.c\
+	threads.c\
+	fractals.c\
+	hooks.c\
+	hooks2.c
+SOURCES = $(addprefix $(SOURCES_DIRECTORY), $(SOURCES_LIST))
 
-GIT = "should make the Norm & test fr leaks"
+OBJECTS_DIRECTORY = objects/
+OBJECTS_LIST = $(patsubst %.c, %.o, $(SOURCES_LIST))
+OBJECTS	= $(addprefix $(OBJECTS_DIRECTORY), $(OBJECTS_LIST))
+
+GIT = "normed, but should check leaks"
 
 GREEN = \033[0;32m
 RED = \033[0;31m
@@ -41,36 +52,48 @@ RESET = \033[0m
 
 .SILENT:
 
-all: obj $(LIBFT) $(NAME)
+all: $(NAME)
 
-obj:
-	@mkdir -p $(OBJ_DIR)
-$(OBJ_DIR)%.o:$(SRC_DIR)%.c
-	@$(CC) $(FLAGS) -I $(INC_DIR) -I $(LIBFT_DIR) $@ -c $<
-
-$(LIBFT):
-	@echo "$(NAME): $(GREEN)Creating $(LIBFT)...$(RESET)"
-	make -C $(LIBFT_DIR)
-
-$(NAME): $(OBJ)
+$(NAME): $(LIBFT) $(MINILIBX) $(OBJECTS_DIRECTORY) $(OBJECTS)
 	printf "$(RESET)%s\n\$(RESET)" "Compiling..."
-	@$(CC) $(NAME) $(OBJ) $(LNK) -lm $(LIBFT_DIR)/libft.a $(MLX) $(FLAGSMLX)
+	@$(CC) $(FLAGS) $(LIBRARIES) $(INCLUDES) $(OBJECTS) -o $(NAME)
 	@echo "\n$(NAME): $(GREEN)✔ object files were created$(RESET)"
 	@echo "$(NAME): $(GREEN)$(NAME)✔ was created$(RESET)"
 
+$(OBJECTS_DIRECTORY):
+	@mkdir -p $(OBJECTS_DIRECTORY)
+	@echo "$(NAME): $(GREEN)$(OBJECTS_DIRECTORY) was created$(RESET)"
+
+$(OBJECTS_DIRECTORY)%.o : $(SOURCES_DIRECTORY)%.c $(HEADERS)
+	@$(CC) $(FLAGS) -c $(INCLUDES) $< -o $@
+	@echo "$(GREEN).$(RESET)\c"
+
+$(LIBFT):
+	@echo "$(NAME): $(GREEN)Creating $(LIBFT)...$(RESET)"
+	@$(MAKE) -sC $(LIBFT_DIRECTORY)
+
+$(MINILIBX):
+	@echo "$(NAME): $(GREEN)Creating $(MINILIBX)...$(RESET)"
+	@$(MAKE) -sC $(MINILIBX_DIRECTORY)
+
 clean:
-	@rm -Rf $(OBJ_DIR)
-	@make -C $(LIBFT_DIR) clean
-	@echo "$(NAME): $(RED)$(OBJECTS_DIRECTORY) was deleted$(RESET)"
+	@$(MAKE) -sC $(LIBFT_DIRECTORY) clean
+	@$(MAKE) -sC $(MINILIBX_DIRECTORY) clean
+	@rm -rf $(OBJECTS_DIRECTORY)
+	@echo "$(NAME): $(RED)$(OBJECTS_DIRECTORY) ✔ was deleted$(RESET)"
 	@echo "$(NAME): $(RED)✔ object files were deleted$(RESET)"
 
 fclean: clean
+	@rm -f $(MINILIBX)
+	@echo " ✔ $(NAME): $(RED)$(MINILIBX) was deleted$(RESET)"
+	@rm -f $(LIBFT)
+	@echo " ✔ $(NAME): $(RED)$(LIBFT) was deleted$(RESET)"
 	@rm -f $(NAME)
-	@echo "$(NAME): $(RED)✔ $(NAME) was deleted$(RESET)"
-	@make -C $(LIBFT_DIR) fclean
-	@echo "$(NAME): $(RED)✔ fcleaned$(RESET)"
+	@echo " ✔ $(NAME): $(RED)$(NAME) was deleted$(RESET)"
 
-re: fclean all
+re: 
+	@$(MAKE) fclean
+	@$(MAKE) all
 
 git:
 	make fclean

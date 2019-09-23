@@ -6,13 +6,13 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/16 02:43:44 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/16 15:38:11 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/22 13:36:02 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fract_ol.h"
 
-int		heart(t_fractol *set, int x, int y)
+int			heart(t_fractol *set, int x, int y)
 {
 	int		i;
 	double	tab[6];
@@ -33,8 +33,7 @@ int		heart(t_fractol *set, int x, int y)
 	return (i);
 }
 
-
-int		burning_ship(t_fractol *set, int x, int y)
+int			burning_ship(t_fractol *set, int x, int y)
 {
 	int		i;
 	double	tab[6];
@@ -55,7 +54,7 @@ int		burning_ship(t_fractol *set, int x, int y)
 	return (i);
 }
 
-int julia(t_fractol *set, int x, int y)
+int			julia(t_fractol *set, int x, int y)
 {
 	int		i;
 	double	a;
@@ -76,7 +75,7 @@ int julia(t_fractol *set, int x, int y)
 	return (i);
 }
 
-int		mandelbrot(t_fractol *set, int x, int y)
+int			mandelbrot(t_fractol *set, int x, int y)
 {
 	int		i;
 	double	tab[6];

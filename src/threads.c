@@ -6,49 +6,51 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/16 02:41:41 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/16 02:42:10 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/22 13:40:05 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fract_ol.h"
 
-void draw(t_fractol *set, int y, int y_final)
+void			draw(t_fractol *set, int y, int y_final)
 {
-	int x;
-	int i;
-	int color;
+	int			x;
+	int			i;
+	int			color;
 
 	while (y < y_final)
+	{
+		x = -1;
+		while (++x < WIDTH)
 		{
-			x = -1;
-			while (++x < WIDTH)
-			{
-				i = set->name(set, x, y);
-				color = (i * set->r/set->max_n) + (i * set->g/set->max_n) + (i * set->b/set->max_n);
-				set->img_ptr[x + (y * WIDTH)] = ((i < set->max_n) ? color : 0);
-			}
-			y++;
+			i = set->name(set, x, y);
+			color = (i * set->r / set->max_n) + (i * set->g / set->max_n) + \
+			(i * set->b / set->max_n);
+			set->img_ptr[x + (y * WIDTH)] = ((i < set->max_n) ? color : 0);
 		}
+		y++;
+	}
 }
 
-void *find_thread(void *set)
+void			*find_thread(void *set)
 {
 	t_fractol	*f;
-	int i;
+	int			i;
 
 	f = (t_fractol*)set;
 	i = -1;
 	while (++i < THREADS)
 	{
 		if (pthread_equal(pthread_self(), f->threads[i]))
-			draw(f, i * (WIDTH / THREADS), i * (WIDTH / THREADS) + (WIDTH / THREADS));
+			draw(f, i * (WIDTH / THREADS), i * (WIDTH / THREADS) + \
+			(WIDTH / THREADS));
 	}
 	return (0);
 }
 
-void multithread(t_fractol *set)
+void			multithread(t_fractol *set)
 {
-	int i;
+	int			i;
 
 	if (set->drawn)
 	{

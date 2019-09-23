@@ -6,7 +6,7 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/16 02:43:08 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/16 02:46:49 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/22 15:12:09 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int		mouse_motion(int x, int y, t_fractol *set)
 	return (0);
 }
 
-int		mouse_M_J(int key, int x, int y, t_fractol *set)
+int		mouse_m_j(int key, int x, int y, t_fractol *set)
 {
 	if (key == 4 || key == 5)
 	{

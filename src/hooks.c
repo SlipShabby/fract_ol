@@ -6,13 +6,13 @@
 /*   By: ajulanov <ajulanov@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/09/16 02:17:48 by ajulanov          #+#    #+#             */
-/*   Updated: 2019/09/16 02:39:44 by ajulanov         ###   ########.fr       */
+/*   Updated: 2019/09/22 17:03:01 by ajulanov         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fract_ol.h"
 
-void	reset(t_fractol *set)
+void		reset(t_fractol *set)
 {
 	set->max_n = 100;
 	set->zoom = 1;
@@ -21,7 +21,7 @@ void	reset(t_fractol *set)
 	multithread(set);
 }
 
-void	key_color(int key, t_fractol *set)
+void		key_color(int key, t_fractol *set)
 {
 	if (key == NUM_1)
 		set->r -= 0x010000;
@@ -50,36 +50,36 @@ void	key_color(int key, t_fractol *set)
 	multithread(set);
 }
 
-int key_press_hook(int key, t_fractol *set)
+int			key_press_hook(int key, t_fractol *set)
 {
 	if (key == PRESS_ESC)
 		exit(0);
 	if (key == CLEAR)
 		reset(set);
-	if (key == NMAX_DCR || key == NMAX_IN || key == NMAX_DCR_KEYBD || key == NMAX_IN_KEYBRD)
+	if (key == N_DCR || key == N_IN || key == N_DCR_KBRD || key == N_IN_KBRD)
 	{
-		if ((key == NMAX_DCR || key == NMAX_DCR_KEYBD) && set->max_n > 0)
+		if ((key == N_DCR || key == N_DCR_KBRD) && set->max_n > 0)
 			set->max_n -= 5;
-		if (key == NMAX_IN || key == NMAX_IN_KEYBRD)
+		if (key == N_IN || key == N_IN_KBRD)
 			set->max_n += 5;
-		multithread(set);	
+		multithread(set);
 	}
-	if (key == MOVE_DOWN || key == MOVE_LEFT || key == MOVE_RIGHT || key ==MOVE_UP)
+	if (key == DOWN || key == LEFT || key == RIGHT || key == UP)
 	{
-		(key == MOVE_DOWN) ? set->move_y += SHIFT : 0;
-		(key == MOVE_UP) ? set->move_y -= SHIFT : 0;
-		(key == MOVE_RIGHT) ? set->move_x += SHIFT : 0;
-		(key == MOVE_LEFT) ? set->move_x -= SHIFT : 0;
+		(key == DOWN) ? set->move_y += SHIFT : 0;
+		(key == UP) ? set->move_y -= SHIFT : 0;
+		(key == RIGHT) ? set->move_x += SHIFT : 0;
+		(key == LEFT) ? set->move_x -= SHIFT : 0;
 		multithread(set);
 	}
 	if (key >= NUM_0 && key <= NUM_9)
-			key_color(key, set);
+		key_color(key, set);
 	if (key == SPACE)
 		set->lock = (set->lock == 0) ? 1 : 0;
 	return (0);
 }
 
-void set_hooks(t_fractol *set)
+void		set_hooks(t_fractol *set)
 {
 	mlx_hook(set->win, 2, 0, key_press_hook, set);
 	mlx_hook(set->win, 6, 0, mouse_motion, set);
